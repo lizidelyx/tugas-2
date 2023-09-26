@@ -4,14 +4,7 @@
 {% block content %}
     <h1>Itemopia Page</h1>
 
-    <h5>App name: </h5>
-    <p>{{ app_name }}<p>
-
-    <h5>Name:</h5>
-    <p>{{name}}</p>
-
-    <h5>Class:</h5>
-    <p>{{class}}</p>
+    <h3>Halo, {{ name }}</h3>
 
     <h5>Ada <span id="jumlah_produk">{{ jumlah_produk }}</span> jenis item di tempat penyimpananmu saat ini</h5>
     <h5>Total keseluruhan itemmu ada :  <span id="jumlah_item">{{ jumlah_item }}</span> </h5>
@@ -22,20 +15,75 @@
             <th>Name</th>
             <th>Amount</th>
             <th>Description</th>
-
+            <th></th> <!-- Menambah kolom untuk tombol "Hapus" -->
         </tr>
-
+    
         {% comment %} Berikut cara memperlihatkan data produk di bawah baris ini {% endcomment %}
-
+    
         {% for product in products %}
             <tr>
-                <td>{{product.name}}</td>
-                <td>{{product.amount}}</td>
-                <td>{{product.description}}</td>
-                
+                <td>{{ product.name }}</td>
+                <td>
+                    <span id="amount_{{ product.id }}">{{ product.amount }}</span>
+                    <button class="btn-increment" data-product-id="{{ product.id }}" data-increment="1">+</button>
+                    <button class="btn-decrement" data-product-id="{{ product.id }}" data-increment="-1">-</button>
+                </td>
+                <td>{{ product.description }}</td>
+                <td>
+                    <form method="post" action="{% url 'main:hapus_produk' product.id %}">
+                        {% csrf_token %}
+                        <button type="submit">Hapus</button>
+                    </form>
+                </td>
             </tr>
         {% endfor %}
     </table>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const incrementButtons = document.querySelectorAll('.btn-increment');
+            const decrementButtons = document.querySelectorAll('.btn-decrement');
+    
+            incrementButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const productId = this.getAttribute('data-product-id');
+                    const incrementValue = parseInt(this.getAttribute('data-increment'));
+                    const amountElement = document.getElementById(`amount_${productId}`);
+                    const currentAmount = parseInt(amountElement.innerText);
+                    const newAmount = currentAmount + incrementValue;
+    
+                    // Update UI
+                    amountElement.innerText = newAmount;
+    
+                    // You can also send an AJAX request to update the amount in the backend database.
+                    // Example:
+                    // fetch(`/update_amount/${productId}/${newAmount}/`, { method: 'POST' });
+                });
+            });
+    
+            decrementButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    const productId = this.getAttribute('data-product-id');
+                    const incrementValue = parseInt(this.getAttribute('data-increment'));
+                    const amountElement = document.getElementById(`amount_${productId}`);
+                    const currentAmount = parseInt(amountElement.innerText);
+                    const newAmount = currentAmount + incrementValue;
+    
+                    // Update UI
+                    amountElement.innerText = newAmount;
+    
+                    // You can also send an AJAX request to update the amount in the backend database.
+                    // Example:
+                    // fetch(`/update_amount/${productId}/${newAmount}/`, { method: 'POST' });
+                });
+            });
+        });
+    </script>
+    
+    
+        
+
+        
 
     <br />
 
@@ -44,5 +92,13 @@
             Add New Product
         </button>
     </a>
+
+    <a href="{% url 'main:logout' %}">
+        <button>
+            Logout
+        </button>
+    </a>
+
+    <h5>Sesi terakhir login: {{ last_login }}</h5>
 
 {% endblock content %}
