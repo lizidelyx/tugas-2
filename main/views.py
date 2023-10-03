@@ -81,13 +81,14 @@ def show_main(request):
     jumlah_item = sum(product.amount for product in products)
 
     jumlah_produk = products.count()
-    
+    last_login = request.COOKIES.get('last_login', 'Tidak ada informasi login sebelumnya')  # Menggunakan get untuk menghindari KeyError
+
     context = {
         'name': request.user.username,
         'products': products,
         'jumlah_produk': jumlah_produk,
         'jumlah_item': jumlah_item,
-        'last_login': request.COOKIES['last_login'],
+        'last_login': last_login,
     }
 
     return render(request, "main.html", context)
