@@ -6,6 +6,9 @@ from main.forms import Item
 from django.http import HttpResponse
 from django.core import serializers
 import datetime
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponseNotFound
+
 
 
 #untuk membuat login form 
@@ -14,6 +17,75 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib import messages  
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+
+from django.http import JsonResponse
+from django.shortcuts import get_object_or_404
+
+def hapus_produk_ajax(request, product_id):
+    if request.method == 'DELETE':
+        product = get_object_or_404(Item, pk=product_id)
+        product.delete()
+        return HttpResponse(status=204)  # Menyatakan penghapusan berhasil
+    return HttpResponse(status=400)  # Permintaan yang tidak valid
+
+@csrf_exempt
+def add_product_ajax(request):
+    if request.method == 'POST':
+        name = request.POST.get("name")
+        amount = request.POST.get("amount")
+        description = request.POST.get("description")
+        user = request.user
+
+        if name and amount:  # Pastikan name dan amount tidak kosong
+            new_product = Item(name=name, amount=amount, description=description, user=user)
+            new_product.save()
+            return JsonResponse({'message': 'Product created successfully'})
+        else:
+            return JsonResponse({'error': 'Invalid data'}, status=400)
+
+    return JsonResponse({'error': 'Invalid request method'}, status=405)
+
+def get_product_json(request):
+    product_item = Item.objects.all()
+    return HttpResponse(serializers.serialize('json', product_item))
+
+def tambah_produk(request, product_id):
+    try:
+        produk = Item.objects.get(id=product_id)
+        produk.amount += 1
+
+        # Validasi agar jumlah produk tidak negatif
+        if produk.amount < 0:
+            produk.amount = 0
+
+        produk.save()
+        jumlah_item = sum([product.amount for product in Item.objects.all()])
+
+        # Mengembalikan respons JSON yang berisi data jumlah produk yang baru
+        return JsonResponse({'new_amount': produk.amount, 'new_total_item': jumlah_item})
+    
+    except Item.DoesNotExist:
+        # Handle jika produk tidak ditemukan
+        return JsonResponse({'error': 'Produk tidak ditemukan'}, status=404)
+
+def kurang_produk(request, product_id):
+    try:
+        produk = Item.objects.get(id=product_id)
+        produk.amount -= 1
+
+        # Validasi agar jumlah produk tidak negatif
+        if produk.amount < 0:
+            produk.amount = 0
+
+        produk.save()
+        jumlah_item = sum([product.amount for product in Item.objects.all()])
+
+        # Mengembalikan respons JSON yang berisi data jumlah produk yang baru
+        return JsonResponse({'new_amount': produk.amount, 'new_total_item': jumlah_item})
+    except Item.DoesNotExist:
+        # Handle jika produk tidak ditemukan
+        return JsonResponse({'error': 'Produk tidak ditemukan'}, status=404)
+
 
 def hapus_produk(request, product_id):
     try:
@@ -73,6 +145,10 @@ def show_xml(request):
 def show_json(request):
     data = Item.objects.all()
     return HttpResponse(serializers.serialize("json", data), content_type="application/json")
+
+
+    
+    
 
 @login_required(login_url='/login')
 def show_main(request):

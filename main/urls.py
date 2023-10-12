@@ -1,7 +1,7 @@
 from django.urls import path
 from main.views import show_main, create_product, show_xml, show_json, show_xml_by_id, show_json_by_id 
 from main.views import register, login_user #sesuaikan dengan nama fungsi yang dibuat
-from main.views import logout_user, hapus_produk
+from main.views import logout_user, hapus_produk, kurang_produk, tambah_produk, get_product_json, add_product_ajax, hapus_produk_ajax
 
 app_name = 'main'
 
@@ -16,4 +16,11 @@ urlpatterns = [
     path('login/', login_user, name='login'),
     path('logout/', logout_user, name='logout'),
     path('hapus_produk/<int:product_id>/', hapus_produk, name='hapus_produk'),
+    path('tambah_produk/<int:product_id>/', tambah_produk, name='tambah_produk'),
+    path('kurang_produk/<int:product_id>/', kurang_produk, name='kurang_produk'),
+    path('get-product/', get_product_json, name='get_product_json'),
+    path('create-product-ajax/', add_product_ajax, name='add_product_ajax'),
+    path('hapus_produk_ajax/<int:product_id>/', hapus_produk_ajax, name='hapus_produk_ajax')
+
+
 ]
